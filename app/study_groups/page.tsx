@@ -73,6 +73,20 @@ export default function StudyGroupsPage() {
     setCreating(false)
   }
 
+  const handleJoinGroup = async (groupId: string) => {
+    if (!userId) return
+    const { error } = await supabase
+      .from('group_members')
+      .insert([{ group_id: groupId, user_id: userId }])
+    
+    if (!error) {
+      alert('Joined group! You are now part of this study collective.')
+      // In a real app we might fetch members here
+    } else if (error.code === '23505') {
+      alert('You are already a member of this group!')
+    }
+  }
+
   if (loading) return null
 
   return (
@@ -162,7 +176,11 @@ export default function StudyGroupsPage() {
                           +2
                         </div>
                       </div>
-                      <Button variant="outline" className="w-full group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                      <Button 
+                        onClick={() => handleJoinGroup(group.id)}
+                        variant="outline" 
+                        className="w-full group-hover:bg-blue-600 group-hover:text-white transition-colors"
+                      >
                         Join Group
                       </Button>
                     </CardContent>

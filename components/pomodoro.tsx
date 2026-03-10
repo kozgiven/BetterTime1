@@ -34,7 +34,7 @@ export function PomodoroTimer() {
     setIsBreak(nextIsBreak)
     setTimeLeft(nextIsBreak ? 5 * 60 : 25 * 60)
     
-    if (!nextIsBreak) {
+    if (nextIsBreak) {
       setSessionCount(prev => prev + 1)
       // Award XP for completion
       const { data: { session } } = await supabase.auth.getSession()
