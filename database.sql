@@ -1,6 +1,7 @@
 -- Existing tables
 CREATE TABLE public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users on delete cascade,
+  name TEXT,
   sleep_time TIME,
   wake_time TIME,
   xp INTEGER DEFAULT 0,
@@ -46,6 +47,7 @@ CREATE TABLE public.calendar_syncs (
 CREATE TABLE public.study_groups (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
+  description TEXT,
   created_by UUID REFERENCES auth.users on delete cascade,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -95,6 +97,13 @@ CREATE POLICY "Users can insert own energy logs." ON public.energy_logs FOR INSE
 CREATE POLICY "Users can view own calendar syncs." ON public.calendar_syncs FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert own calendar syncs." ON public.calendar_syncs FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+-- Study Groups Policies
 CREATE POLICY "Anyone can view study groups." ON public.study_groups FOR SELECT USING (true);
-CREATE POLICY "Anyone can join study groups." ON public.group_members FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Members can view study groups." ON public.group_members FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Authenticated users can create study groups." ON public.study_groups FOR INSERT WITH CHECK (auth.uid() = created_by);
+CREATE POLICY "Owners can update their study groups." ON public.study_groups FOR UPDATE USING (auth.uid() = created_by);
+CREATE POLICY "Owners can delete their study groups." ON public.study_groups FOR DELETE USING (auth.uid() = created_by);
+
+-- Group Members Policies
+CREATE POLICY "Members can view study groups memberships." ON public.group_members FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can join groups." ON public.group_members FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can leave groups." ON public.group_members FOR DELETE USING (auth.uid() = user_id);
