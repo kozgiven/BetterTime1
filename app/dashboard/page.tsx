@@ -47,7 +47,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [currentTime, setCurrentTime] = useState(new Date())
 
-  // We refresh current time every minute
+  // Refresh current time every minute
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000)
     return () => clearInterval(timer)
@@ -114,12 +114,9 @@ export default function DashboardPage() {
     const date = new Date(currentTime)
     date.setHours(hours, minutes, 0, 0)
     
-    // If sleep time is early morning (e.g. 2AM) and it's evening now (e.g. 5PM)
-    // it means they sleep tomorrow
     if (date < currentTime && currentTime.getHours() - date.getHours() > 12) {
       date.setDate(date.getDate() + 1)
     }
-    // If sleep time is past, and diff is small, we are late for sleep!
     return date
   }
 
@@ -144,21 +141,18 @@ export default function DashboardPage() {
       duration: 480
     })
 
-    // 3. Sort tasks based on current energy (Simplified: High energy -> Long tasks first)
+    // 3. Sort tasks based on current energy
     const avgEnergy = energyLogs.length > 0 ? energyLogs.reduce((a,b) => a+b, 0) / energyLogs.length : 3
     const sortedTasks = [...tasks].sort((a, b) => {
-      if (avgEnergy >= 4) return b.duration_minutes - a.duration_minutes // Peak energy: eat the frog
-      return a.duration_minutes - b.duration_minutes // Low energy: quick wins
+      if (avgEnergy >= 4) return b.duration_minutes - a.duration_minutes 
+      return a.duration_minutes - b.duration_minutes 
     })
 
     // 4. Fill gaps
     let currentTimePointer = new Date(currentTime)
-    
-    // Sort all fixed events to find gaps
     const sortedFixed = [...schedule].sort((a, b) => a.startTime.getTime() - b.startTime.getTime())
     
     sortedTasks.forEach(task => {
-      // Find the first gap after currentTimePointer that fits this task
       for (let i = 0; i <= sortedFixed.length; i++) {
         const gapStart = currentTimePointer
         const nextEvent = sortedFixed.find(e => e.startTime > gapStart)
@@ -166,7 +160,6 @@ export default function DashboardPage() {
         const gapDurationMinutes = (gapEnd.getTime() - gapStart.getTime()) / 60000
 
         if (gapDurationMinutes >= task.duration_minutes) {
-          // Add buffer if needed
           if (task.duration_minutes >= 45) {
             schedule.push({
               id: `buffer-${task.id}`,
@@ -189,9 +182,8 @@ export default function DashboardPage() {
           })
 
           currentTimePointer = new Date(gapStart.getTime() + task.duration_minutes * 60000)
-          break // Task placed
+          break 
         } else if (nextEvent) {
-          // Move pointer to end of this event to check next gap
           currentTimePointer = new Date(nextEvent.endTime)
         }
       }
@@ -201,7 +193,6 @@ export default function DashboardPage() {
   }
 
   const schedule = generateAdaptiveSchedule()
-
   const totalRequiredMinutes = tasks.reduce((sum, t) => sum + t.duration_minutes, 0)
   const isSleepSafe = totalRequiredMinutes <= availableMinutesBeforeSleep
 
@@ -214,7 +205,6 @@ export default function DashboardPage() {
     <div className="min-h-screen flex flex-col bg-neutral-50 dark:bg-neutral-950">
       <Navbar />
       
-      {/* Add padding top to account for navbar */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 space-y-8">
         
         {/* Profile Card & XP Header */}
@@ -256,7 +246,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* 10x Feature Grid (Header Stats + Pomodoro + Energy) */}
+        {/* 10x Feature Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="bg-purple-50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800">
@@ -357,7 +347,6 @@ export default function DashboardPage() {
               )}
 
               {schedule.map((block, i) => {
-                
                 let icon, colorClass, borderClass
                 
                 if (block.type === 'task') {
@@ -378,14 +367,12 @@ export default function DashboardPage() {
                   borderClass = "ring-purple-100 dark:ring-purple-900 border-purple-200 dark:border-purple-800"
                 }
 
-                // If schedule overruns sleep time, styling for sleep changes
                 if (block.type === 'sleep' && !isSleepSafe) {
                   colorClass = "bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-100 border-red-200 dark:border-red-800 border-dashed border-2"
                 }
 
                 return (
                   <div key={`${block.id}-${i}`} className="relative pl-8">
-                    {/* Timeline Node */}
                     <div className={`absolute -left-[17px] top-6 w-8 h-8 rounded-full bg-white dark:bg-neutral-900 border-2 flex items-center justify-center ring-4 z-10 ${borderClass}`}>
                       {icon}
                     </div>
