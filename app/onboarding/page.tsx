@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 
 export default function OnboardingPage() {
   const router = useRouter()
+  const [name, setName] = useState('')
   const [sleepTime, setSleepTime] = useState('23:00')
   const [wakeTime, setWakeTime] = useState('07:00')
   const [loading, setLoading] = useState(false)
@@ -33,7 +34,7 @@ export default function OnboardingPage() {
         .from('profiles')
         .upsert({
           id: userId,
-          user_id: userId,
+          name: name || 'Student',
           sleep_time: sleepTime,
           wake_time: wakeTime
         })
@@ -51,12 +52,21 @@ export default function OnboardingPage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Set Your Sleep Anchor</CardTitle>
+          <CardTitle className="text-2xl">Create Your Profile</CardTitle>
           <CardDescription>
             BetterTime schedules your day around your sleep to protect your rest.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">What's your name?</Label>
+            <Input
+              id="name"
+              placeholder="e.g., Alex"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="sleepTime">When do you plan to sleep?</Label>
             <Input
