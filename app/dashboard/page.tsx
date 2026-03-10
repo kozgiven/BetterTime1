@@ -15,6 +15,7 @@ import { StudyBuddies } from '@/components/study-buddies'
 import { Progress } from '@/components/ui/progress'
 
 type Profile = {
+  name: string
   sleep_time: string
   wake_time: string
   xp: number
@@ -75,6 +76,7 @@ export default function DashboardPage() {
       }
 
       setProfile({
+        name: profileResponse.data.name || 'Student',
         sleep_time: profileResponse.data.sleep_time,
         wake_time: profileResponse.data.wake_time,
         xp: profileResponse.data.xp || 0,
@@ -299,7 +301,7 @@ export default function DashboardPage() {
                   {Math.floor(availableMinutesBeforeSleep / 60)}h {availableMinutesBeforeSleep % 60}m
                 </CardTitle>
               </CardHeader>
-            </CardContent>
+            </Card>
             
             <div className="md:col-span-2">
               <DailyRoadmap 
